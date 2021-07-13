@@ -34,20 +34,14 @@ class FNPTCPLTYP
 };
 class COMMONMOD
 {
-    private:long int LNODE;
     public:
+    long int LNODE = 0;
     long int *NODEID = NULL, *NWALLID = NULL;
     double *COORX = NULL, *COORY = NULL, *COORZ = NULL;
     double *SNX = NULL, *SNY = NULL, *SNZ = NULL;
     double *SMX = NULL, *SMY = NULL, *SMZ = NULL;
     double *SSX = NULL, *SSY = NULL, *SSZ = NULL;
     double *TANK_A = NULL;
-    COMMONMOD():LNODE(0){}
-    void SETLNODE(long int LNODEIN)
-    {
-        LNODE=LNODEIN;
-        cout<<LNODE<<endl;
-    }
     void INITCOMMONMOD()
     {
         NODEID = new long int[7+LNODE];
@@ -135,8 +129,9 @@ int main()
     FP.NN=(FP.NX)*(FP.NY);
     cout<<FP.NN<<endl;
     COMMONMOD commonmod;
-    commonmod.SETLNODE(II);
+    commonmod.LNODE=II;
     commonmod.INITCOMMONMOD();
+
     //checking the input data
     /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
         <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
