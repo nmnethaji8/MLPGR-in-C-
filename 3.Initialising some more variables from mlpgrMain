@@ -135,16 +135,17 @@ int main()
     //Variables in malpgrMain
 
     double *FB = NULL, *PTMP = NULL, *P = NULL;
-    FB = new double[commonmod.LNODE];
-    PTMP = new double[commonmod.LNODE];
-    P = new double[commonmod.LNODE];
+    FB = new double[commonmod.LNODE]();
+    PTMP = new double[commonmod.LNODE]();
+    P = new double[commonmod.LNODE]();
     double *UN = NULL, *UM = NULL;
-    UN = new double[commonmod.LNODE*3];
-    UM = new double[commonmod.LNODE];
+    UN = new double[commonmod.LNODE*3]();
+    UM = new double[commonmod.LNODE]();
     double *CSUXT1 = NULL, *CSUYT1 = NULL, *CSUZT1 = NULL;
-    CSUXT1 = new double[commonmod.LNODE];
-    CSUYT1 = new double[commonmod.LNODE];
-    CSUZT1 = new double[commonmod.LNODE];
+    CSUXT1 = new double[commonmod.LNODE]();
+    CSUYT1 = new double[commonmod.LNODE]();
+    CSUZT1 = new double[commonmod.LNODE]();
+    
     //checking the input data
     /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
         <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
