@@ -44,31 +44,30 @@ class COMMONMOD
     double *TANK_A = NULL;
     void INITCOMMONMOD()
     {
-        NODEID = new long int[7+LNODE];
-        NWALLID = new long int[LNODE*4];
-        COORX = new double[LNODE*3];
-        COORY = new double[LNODE*3];
-        COORZ = new double[LNODE*3];
-        SNX = new double[LNODE];
-        SNY = new double[LNODE];
-        SNZ = new double[LNODE];
-        SMX = new double[LNODE];
-        SMY = new double[LNODE];
-        SMZ = new double[LNODE];
-        SSX = new double[LNODE];
-        SSY = new double[LNODE];
-        SSZ = new double[LNODE];
-        TANK_A = new double[LNODE*3];
+        NODEID = new long int[8+LNODE]();
+        NWALLID = new long int[LNODE*4]();
+        COORX = new double[LNODE*3]();
+        COORY = new double[LNODE*3]();
+        COORZ = new double[LNODE*3]();
+        SNX = new double[LNODE]();
+        SNY = new double[LNODE]();
+        SNZ = new double[LNODE]();
+        SMX = new double[LNODE]();
+        SMY = new double[LNODE]();
+        SMZ = new double[LNODE]();
+        SSX = new double[LNODE]();
+        SSY = new double[LNODE]();
+        SSZ = new double[LNODE]();
+        TANK_A = new double[LNODE*3]();
     }
 };
 
 void NODEGRID(string MESHFILE, long int FSNOD1, long int FSNOD2,
 double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
-double CYLR, COMMONMOD commonmod,double DDL )
+double CYLR, COMMONMOD c,double DDL )
 {
     long int I, J, NGHST, IEND;
 }
-
 int main()
 {
     //declaring and initializing variables from mlpgrInput.dat file
@@ -136,26 +135,26 @@ int main()
     cout<<FP.FILE<<endl;
     FP.NN=(FP.NX)*(FP.NY);
     cout<<FP.NN<<endl;
-    COMMONMOD commonmod;
-    commonmod.LNODE=II;
-    commonmod.INITCOMMONMOD();
+    COMMONMOD c;
+    c.LNODE=II;
+    c.INITCOMMONMOD();
 
     //Variables in malpgrMain
 
     double *FB = NULL, *PTMP = NULL, *P = NULL;
-    FB = new double[commonmod.LNODE]();
-    PTMP = new double[commonmod.LNODE]();
-    P = new double[commonmod.LNODE]();
+    FB = new double[c.LNODE]();
+    PTMP = new double[c.LNODE]();
+    P = new double[c.LNODE]();
     double *UN = NULL, *UM = NULL;
-    UN = new double[commonmod.LNODE*3]();
-    UM = new double[commonmod.LNODE]();
+    UN = new double[c.LNODE*3]();
+    UM = new double[c.LNODE]();
     double *CSUXT1 = NULL, *CSUYT1 = NULL, *CSUZT1 = NULL;
-    CSUXT1 = new double[commonmod.LNODE]();
-    CSUYT1 = new double[commonmod.LNODE]();
-    CSUZT1 = new double[commonmod.LNODE]();
+    CSUXT1 = new double[c.LNODE]();
+    CSUYT1 = new double[c.LNODE]();
+    CSUZT1 = new double[c.LNODE]();
     
     long int FSNOD1 = 0, FSNOD2 = 0;
-    NODEGRID(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, CYLX, CYLY, CYLR, commonmod, DDL);
+    NODEGRID(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, CYLX, CYLY, CYLR, c, DDL);
     //checking the input data
     /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
         <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
