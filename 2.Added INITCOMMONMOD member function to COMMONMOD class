@@ -120,9 +120,9 @@ int main()
     cout<<FP.FILE<<endl;
     FP.NN=(FP.NX)*(FP.NY);
     cout<<FP.NN<<endl;
-    COMMONMOD commonmod;
-    commonmod.LNODE=II;
-    commonmod.INITCOMMONMOD();
+    COMMONMOD c;
+    c.LNODE=II;
+    c.INITCOMMONMOD();
 
     //checking the input data
     /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
