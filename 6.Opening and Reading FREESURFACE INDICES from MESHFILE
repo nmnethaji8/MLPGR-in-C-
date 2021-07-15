@@ -63,9 +63,9 @@ double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
 double CYLR, COMMONMOD c, double DDL)
 {
     long int MSFL = 101;
-    long int FSNODSTART, FSNODEND, NGHST;
-    long int NODEGETY[2];
-    double RIAV;
+    long int FSNODSTART=0, FSNODEND=0, NGHST=0;
+    long int NODEGETY[2]={0};
+    double RIAV=0;
     cout << "Entering Cylind3" << endl;
     ifstream meshfile;
     meshfile.open(MESHFILE);
@@ -85,12 +85,17 @@ double CYLR, COMMONMOD c, double DDL)
     cout << FSNODSTART << " "<< FSNODEND << endl;
     meshfile.ignore(1,'\n');
     getline(meshfile,skip);
+    cout << skip << endl;
     meshfile >> FSNOD1;
+    cout << FSNOD1 << endl;
     getline(meshfile,skip);
-    meshfile.ignore(1,'\n');
+    //meshfile.ignore(1,'\n');
     meshfile >> FSNOD2;
+    cout << FSNOD2 << endl;
     getline(meshfile,skip);
     meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    cout << skip << endl;
 }
 
 
