@@ -2,7 +2,9 @@
 #include<fstream>
 #include<string>
 #include<vector>
+//#include"PROBESMOD.h"
 using namespace std;
+
 class PROBETYP
 {
     public:long int NP=0, NVAR=0, FILE=0;
@@ -14,24 +16,18 @@ class PROBETYP
         FILE=F;
         if(XYZ!=NULL){delete [] XYZ;}
         if(DATA!=NULL){delete [] DATA;}
-        XYZ = new double[NP*3];
-        DATA = new double[NP*NVAR];
-        for(long int i=0; i<NP*3; i++)
-        {
-            XYZ[i]=0;
-        }
-        for(long int i=0; i<NP*NVAR; i++)
-        {
-            DATA[i]=0;
-        }
+        XYZ = new double[NP*3]();
+        DATA = new double[NP*NVAR]();
     }
 };
+
 class FNPTCPLTYP
 {
     public:long int FILE=0, NX=0, NY=0, NN=0;
     double DDL=0, X0=0, RLXLEN=0;
     string FILENAME=" ";
 };
+
 class COMMONMOD
 {
     public:
@@ -61,6 +57,7 @@ class COMMONMOD
         TANK_A = new double[LNODE*3]();
     }
 };
+
 int main()
 {
     //declaring and initializing variables from mlpgrInput.dat file
@@ -89,18 +86,40 @@ int main()
     double CYLX=6.5,CYLY=0.7,CYLR=0.04375;//Cylinder coordinates
     double SPONGEX=13;              //X Location of Sponge layer start (before right-wall)
     long int REMESHFREQ=30;         //Remeshing Freq (=0 to disable)
-    long int NP=9;                
+    long int NP=9;
+
+    //checking the input data
+    /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
+        <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
+        <<"\n"<<I_PF1<<"\n"<<RESFREQ<<"\n"<<RESUMECHK<<"\n"<<RESUMEFILE
+        <<"\n"<<I_CAL_V<<"\n"<<VCOEFF<<"\n"<<I_WM<<"\n"<<IFSI<<"\n"<<NTHR<<"\n"
+        <<II<<"\n"<<MESHFILE<<"\n"<<DOMX[0]<<"\n"<<DOMY[0]<<"\n"
+        <<DOMZ[0]<<"\n"<<DOMX[1]<<"\n"<<DOMY[1]<<"\n"<<DOMZ[1]<<"\n"
+        <<CYLX<<"\n"<<CYLY<<"\n"<<CYLR<<"\n"<<SPONGEX<<"\n"<<REMESHFREQ<<"\n";*/                
+    
     PROBETYP WP,PP;
     WP.INITPROBE(NP, 1, 602);                        //Number of wave probes
+    //WP.FILE=602;
     ifstream mlpgrInput;
     mlpgrInput.open("mlpgrInput.dat");
     for(long int i=0; i<NP; i++)
     {
+        for(long int j=0; j<3; j++)
+        {
+            cout << WP.XYZ[i*3+j] << " " ;
+        }
+        cout << "\n" << endl;
+    }
+    for(long int i=0; i<NP; i++)
+    {
         for(long int j=0; j<2; j++)
         {
-            mlpgrInput >>WP.XYZ[i*2+j];
+            mlpgrInput >> WP.XYZ[i*2+j];
+            cout << WP.XYZ[i*2+j] << " " ;
         }
+        cout << "\n" << endl;
     }
+    //cout << WP.FILE << endl;
     mlpgrInput >> NP;
     PP.INITPROBE(NP, 1, 603);
     for(long int i=0; i<NP; i++)
@@ -145,14 +164,5 @@ int main()
     CSUXT1 = new double[c.LNODE]();
     CSUYT1 = new double[c.LNODE]();
     CSUZT1 = new double[c.LNODE]();
-    
-    //checking the input data
-    /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
-        <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
-        <<"\n"<<I_PF1<<"\n"<<RESFREQ<<"\n"<<RESUMECHK<<"\n"<<RESUMEFILE
-        <<"\n"<<I_CAL_V<<"\n"<<VCOEFF<<"\n"<<I_WM<<"\n"<<IFSI<<"\n"<<NTHR<<"\n"
-        <<LNODETMP<<"\n"<<MESHFILE<<"\n"<<DOMX[0]<<"\n"<<DOMY[0]<<"\n"
-        <<DOMZ[0]<<"\n"<<DOMX[1]<<"\n"<<DOMY[1]<<"\n"<<DOMZ[1]<<"\n"
-        <<CYLX<<"\n"<<CYLY<<"\n"<<CYLR<<"\n"<<SPONGEX<<"\n"<<REMESHFREQ<<"\n";*/
     return 0;
 }
