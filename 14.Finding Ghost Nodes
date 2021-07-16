@@ -1,0 +1,452 @@
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+//#include"PROBESMOD.h"
+using namespace std;
+
+class PROBETYP
+{
+    public:long int NP=0, NVAR=0, FILE=0;
+    double *XYZ=NULL, *DATA=NULL;
+    void INITPROBE(long int N,long int NV,long int F)
+    {
+        NP=N;
+        NVAR=NV;
+        FILE=F;
+        if(XYZ!=NULL){delete [] XYZ;}
+        if(DATA!=NULL){delete [] DATA;}
+        XYZ = new double[NP*3]();
+        DATA = new double[NP*NVAR]();
+    }
+};
+
+class FNPTCPLTYP
+{
+    public:long int FILE=0, NX=0, NY=0, NN=0;
+    double DDL=0, X0=0, RLXLEN=0;
+    string FILENAME=" ";
+};
+
+class COMMONMOD
+{
+    public:
+    long int LNODE = 0;
+    long int *NODEID = NULL, *NWALLID = NULL;
+    double *COORX = NULL, *COORY = NULL, *COORZ = NULL;
+    double *SNX = NULL, *SNY = NULL, *SNZ = NULL;
+    double *SMX = NULL, *SMY = NULL, *SMZ = NULL;
+    double *SSX = NULL, *SSY = NULL, *SSZ = NULL;
+    double *TANK_A = NULL;
+    void INITCOMMONMOD()
+    {
+        NODEID = new long int[8+LNODE]();
+        NWALLID = new long int[LNODE*4]();
+        COORX = new double[LNODE*3]();
+        COORY = new double[LNODE*3]();
+        COORZ = new double[LNODE*3]();
+        SNX = new double[LNODE]();
+        SNY = new double[LNODE]();
+        SNZ = new double[LNODE]();
+        SMX = new double[LNODE]();
+        SMY = new double[LNODE]();
+        SMZ = new double[LNODE]();
+        SSX = new double[LNODE]();
+        SSY = new double[LNODE]();
+        SSZ = new double[LNODE]();
+        TANK_A = new double[LNODE*3]();
+    }
+};
+
+void CYLIND5(string MESHFILE, long int FSNOD1, long int FSNOD2,
+double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
+double CYLR, COMMONMOD c, double DDL)
+{
+    long int MSFL = 101;
+    long int FSNODSTART=0, FSNODEND=0, NGHST=0;
+    long int NODEGETY[2]={0};
+    double RIAV=0;
+    cout << "Entering Cylind3" << endl;
+    ifstream meshfile;
+    meshfile.open(MESHFILE);
+
+    ofstream output;
+    output.open("output2.txt");
+    string skip;
+    getline(meshfile,skip);
+    cout << skip << endl;
+    for(int i=1; i<=7; i++)
+    {
+        meshfile >> c.NODEID[i];
+        cout <<  c.NODEID[i] << " ";
+    }
+    cout << endl;
+    meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    cout << skip << endl;
+    meshfile >> FSNODSTART >> FSNODEND;
+    cout << FSNODSTART << " "<< FSNODEND << endl;
+    meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    cout << skip << endl;
+    meshfile >> FSNOD1;
+    cout << FSNOD1 << endl;
+    getline(meshfile,skip);
+    //meshfile.ignore(1,'\n');
+    meshfile >> FSNOD2;
+    cout << FSNOD2 << endl;
+    getline(meshfile,skip);
+    //meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    cout << skip << endl;
+
+    //Reading fluid and freesurface nodes
+
+    for(long int i=0; i<c.NODEID[2]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+        c.NODEID[i+8]=0;
+
+    }
+
+    /*for(long int i=0; i<c.NODEID[2]; i++)
+    {
+        output << c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;
+    }*/
+    for(long int i=FSNODSTART; i<=FSNODEND; i++)
+    {
+        c.NODEID[i+7+1]=4;
+    }
+
+    //Wavemaker nodes
+    
+    for(long int i=c.NODEID[2]; i<c.NODEID[3]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output << c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+        c.NODEID[i+7+1]=8;
+        c.NWALLID[i]=2;
+        c.NWALLID[1*c.LNODE+i]=1;
+
+        //Top edge of wavemaker
+        if (NODEGETY[0]==2)
+        {
+            c.NWALLID[1*c.LNODE+i]=-11;
+        }
+
+        //Side edges of wavemaker
+        if (NODEGETY[1]==1)
+        {
+            c.NWALLID[0*c.LNODE+i]=7;//Intersection of surfaces
+            c.NWALLID[2*c.LNODE+i]=9;//SPECIAL NODE FOR PRESSURE EQUATION 
+        }
+
+    }
+
+    //Bottom wall nodes
+    for(long int i=c.NODEID[3]; i<c.NODEID[4]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output << c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+        c.NODEID[i+7+1]=2;
+        c.NWALLID[1*c.LNODE+i]=1;
+        c.NWALLID[0*c.LNODE+i]=1;
+
+        if (NODEGETY[1]==1)
+        {
+            c.NWALLID[0*c.LNODE+i]=7;//Intersection of surfaces
+            c.NWALLID[2*c.LNODE+i]=9;//SPECIAL NODE FOR PRESSURE EQUATION 
+        }
+ 
+    }
+
+    //Opposite wall of wavemaker
+
+    for(long int i=c.NODEID[4]; i<c.NODEID[5]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output << c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+        c.NODEID[i+7+1]=3;
+        c.NWALLID[0*c.LNODE+i]=2;
+        c.NWALLID[1*c.LNODE+i]=1;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+            c.NWALLID[1*c.LNODE+i]=-11;//Intersection of surfaces
+        }
+
+        //Side edge
+        if (NODEGETY[1]==1)
+        {
+            c.NWALLID[0*c.LNODE+i]=7;
+            c.NWALLID[2*c.LNODE+i]=9;
+        }
+    }
+
+    //Sidewall Near
+
+    for(long int i=c.NODEID[5]; i<c.NODEID[6]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output << c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+        c.NODEID[i+7+1]=1;
+        c.NWALLID[1*c.LNODE+i]=1;
+        c.NWALLID[0*c.LNODE+i]=3;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+            c.NWALLID[1*c.LNODE+i]=-11;//Intersection of surfaces
+        }
+        
+    }
+
+        //Sidewall Far
+
+    for(long int i=c.NODEID[6]; i<c.NODEID[7]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        c.NODEID[i+7+1]=7;
+        c.NWALLID[1*c.LNODE+i]=1;
+        c.NWALLID[0*c.LNODE+i]=3;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+            c.NWALLID[1*c.LNODE+i]=-11;//Intersection of surfaces
+        }
+
+    }
+
+    //Cylinder Nodes
+    for(long int i=c.NODEID[7]; i<c.NODEID[1]; i++)
+    {
+        meshfile >> c.COORX[i] >> c.COORY[i]
+        >> c.COORZ[i] >> c.SNX[i] >> c.SNY[i]
+        >> c.SNZ[i] >> c.SMX[i] >> c.SMY[i]
+        >> c.SMZ[i] >> c.SSX[i] >> c.SSY[i]
+        >> c.SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        c.NODEID[i+7+1]=9;
+
+        //Bottom edge
+
+        if (NODEGETY[0]==1)
+        {
+            c.NWALLID[2*c.LNODE+i]=9;//Pressure BC ID
+        }
+
+        /*output <<c.COORX[i] << " " << c.COORY[i] << " "
+        << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
+        << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
+        << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
+        << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << " " << c.NODEID[i+8] << " " << c.NWALLID[2*c.LNODE+i] << " ";*/
+    }
+    meshfile.close();
+
+    // Ghost Nodes
+
+    NGHST=c.NODEID[1]-c.NODEID[2];
+    c.NODEID[0]=c.NODEID[1]+NGHST;
+    for(long int i=c.NODEID[2]; i<c.NODEID[7]; i++)
+    {
+        long int j=i+c.NODEID[1]-c.NODEID[2];
+        if(j>c.NODEID[0])
+        {
+            cout << " [ERR] CHECK GHOST GENERATE NGHT > NODEID(0)" << endl;
+        }
+        RIAV = 0.3*DDL; //Keeping this lower than GENERATEGHOST(DDR)
+        for(long int k=0; k<3; k++)
+        {
+            c.COORX[k*c.LNODE+j]=c.COORX[i]+c.SNX[i]*RIAV;
+            c.COORY[k*c.LNODE+j]=c.COORY[i]+c.SNY[i]*RIAV;
+            c.COORZ[k*c.LNODE+j]=c.COORZ[i]+c.SNZ[i]*RIAV;
+        }
+        c.NODEID[j]=-6;
+        c.NWALLID[1*c.LNODE+j]=-10;
+    }
+}
+
+
+void NODEGRID(string MESHFILE, long int FSNOD1, long int FSNOD2,
+double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
+double CYLR, COMMONMOD c,double DDL )
+{
+    long int I, J, NGHST, IEND;
+    CYLIND5(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, 
+    CYLX, CYLY, CYLR, c, DDL);
+}
+int main()
+{
+    //declaring and initializing variables from mlpgrInput.dat file
+    double H0=0.7;                  //Water depth
+    double DDL=0.04375;             //Avg.distance between the nodes
+    double SCALE=1.55;              //Scale factor to determine the domain of influence 
+    long int KW=1;                  //Coefficient for Gauss Weight Function
+    long int MBAS=4;                //Number of components in base function
+    double DT=0.0075, TOTAL_TIME=0; //Time-Step (s), Starting time (s)
+    long int NSTEPS=5500;           //Number of time-steps
+    /*READ RECORD DATA TIME,THE FREQUENCY OF PRINT OUT IN THE NUMBER OF TYPE STEPS 
+    RECORD THE TIME STEP, BEFORE THAT TIME, THE RECORD FREQUENCY IS EVRSTEP,AFTER
+    THAT TIME, THE RECORD FREQUENCY IS EVRSTEP1*/
+    long int IPRINT=5500, I_PF=120, I_PF1=40;//Freq1, Freq1, Freq2
+    long int RESFREQ=800;           //Resume file interval (number of time-step)
+    bool RESUMECHK=0;
+    string RESUMEFILE="Output/Resume_000000800.dat";
+    long int I_CAL_V=0;             //Viscosity On? (0/1)
+    double VCOEFF=0.000001;         //Kinematic viscosity
+    long int I_WM=15;               //Wave-maker type (0-No wavemaker, 1-Flap, 2-piston, 15-FNPT)
+    long int IFSI=0;                //Enable elastic structure? (0/1)
+    long int NTHR=8;                //Number of OpenMP Threads
+    long int II=170000;       //Maximum number of nodes (LNODE)
+    string MESHFILE="EmptyTank_L21_dr043_botFul3.dat";//Name of mesh-file
+    double DOMX[2]={0,21},DOMY[2]={0,0.7},DOMZ[2]={0,0.7};//Domain coordinates
+    double CYLX=6.5,CYLY=0.7,CYLR=0.04375;//Cylinder coordinates
+    double SPONGEX=13;              //X Location of Sponge layer start (before right-wall)
+    long int REMESHFREQ=30;         //Remeshing Freq (=0 to disable)
+    long int NP=9;
+
+    //checking the input data
+    /*cout<<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
+        <<DT<<"\n"<<TOTAL_TIME<<"\n"<<NSTEPS<<"\n"<<IPRINT<<"\n"<<I_PF
+        <<"\n"<<I_PF1<<"\n"<<RESFREQ<<"\n"<<RESUMECHK<<"\n"<<RESUMEFILE
+        <<"\n"<<I_CAL_V<<"\n"<<VCOEFF<<"\n"<<I_WM<<"\n"<<IFSI<<"\n"<<NTHR<<"\n"
+        <<II<<"\n"<<MESHFILE<<"\n"<<DOMX[0]<<"\n"<<DOMY[0]<<"\n"
+        <<DOMZ[0]<<"\n"<<DOMX[1]<<"\n"<<DOMY[1]<<"\n"<<DOMZ[1]<<"\n"
+        <<CYLX<<"\n"<<CYLY<<"\n"<<CYLR<<"\n"<<SPONGEX<<"\n"<<REMESHFREQ<<"\n";*/                
+    
+    PROBETYP WP,PP;
+    WP.INITPROBE(NP, 1, 602);                        //Number of wave probes
+    //WP.FILE=602;
+    ifstream mlpgrInput;
+    mlpgrInput.open("mlpgrInput.dat");
+    /*for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<3; j++)
+        {
+            cout << WP.XYZ[i*3+j] << " " ;
+        }
+        cout << "\n" << endl;
+    }*/
+    for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<2; j++)
+        {
+            mlpgrInput >> WP.XYZ[i*2+j];
+            //cout << WP.XYZ[i*2+j] << " " ;
+        }
+        //cout << "\n" << endl;
+    }
+    //cout << WP.FILE << endl;
+    mlpgrInput >> NP;
+    PP.INITPROBE(NP, 1, 603);
+    for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<3; j++)
+        {
+            mlpgrInput >>PP.XYZ[i*3+j];
+        }
+    }
+    mlpgrInput.close();
+    FNPTCPLTYP FP;
+    FP.FILENAME="/Output PHIT2 23001.dt0075.S18.dat";
+    //cout<<FP.FILENAME<<endl;
+    FP.NX=121;
+    //cout<<FP.NX<<endl;
+    FP.NY=21;
+    //cout<<FP.NY<<endl;
+    FP.DDL=0.05;
+    //cout<<FP.DDL<<endl;
+    FP.X0=18.38;
+    //cout<<FP.X0<<endl;
+    FP.RLXLEN=1;
+    //cout<<FP.RLXLEN<<endl;
+    FP.FILE=601;
+    //cout<<FP.FILE<<endl;
+    FP.NN=(FP.NX)*(FP.NY);
+    //cout<<FP.NN<<endl;
+    COMMONMOD c;
+    c.LNODE=II;
+    c.INITCOMMONMOD();
+
+    //Variables in malpgrMain
+
+    double *FB = NULL, *PTMP = NULL, *P = NULL;
+    FB = new double[c.LNODE]();
+    PTMP = new double[c.LNODE]();
+    P = new double[c.LNODE]();
+    double *UN = NULL, *UM = NULL;
+    UN = new double[c.LNODE*3]();
+    UM = new double[c.LNODE]();
+    double *CSUXT1 = NULL, *CSUYT1 = NULL, *CSUZT1 = NULL;
+    CSUXT1 = new double[c.LNODE]();
+    CSUYT1 = new double[c.LNODE]();
+    CSUZT1 = new double[c.LNODE]();
+
+    long int FSNOD1 = 0, FSNOD2 = 0;
+    NODEGRID(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, CYLX, CYLY, CYLR, c, DDL);
+    return 0;
+}
