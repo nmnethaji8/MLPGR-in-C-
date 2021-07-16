@@ -123,7 +123,7 @@ double CYLR, COMMONMOD c, double DDL)
     }*/
     for(long int i=FSNODSTART; i<=FSNODEND; i++)
     {
-        c.NODEID[i+7]=4;
+        c.NODEID[i+7+1]=4;
     }
 
     //Wavemaker nodes
