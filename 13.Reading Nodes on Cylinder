@@ -298,12 +298,12 @@ double CYLR, COMMONMOD c, double DDL)
             c.NWALLID[2*c.LNODE+i]=9;//Pressure BC ID
         }
 
-        output <<c.COORX[i] << " " << c.COORY[i] << " "
+        /*output <<c.COORX[i] << " " << c.COORY[i] << " "
         << c.COORZ[i] << " " << c.SNX[i] << " " << c.SNY[i]
         << " " << c.SNZ[i] << " " << c.SMX[i] << " " << c.SMY[i]
         << " " << c.SMZ[i] << " " << c.SSX[i] << " " << c.SSY[i]
         << " " << c.SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
-        << " " << c.NODEID[i+8] << " " << c.NWALLID[2*c.LNODE+i] << " ";
+        << " " << c.NODEID[i+8] << " " << c.NWALLID[2*c.LNODE+i] << " ";*/
     }
     meshfile.close();
 }
