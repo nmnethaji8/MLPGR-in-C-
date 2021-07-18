@@ -1,0 +1,13 @@
+#ifndef MY_HEADER_H
+#define MY_HEADER_H
+namespace PROBESMOD
+{
+    class PROBETYP
+    {
+        public:long int NP, NVAR, FILE;
+        double *XYZ, *DATA;
+        PROBETYP();
+        void INITPROBE(long int ,long int ,long int );
+    };
+}
+#endif
