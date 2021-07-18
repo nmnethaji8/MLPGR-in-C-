@@ -5,6 +5,7 @@ namespace COMMONMOD
 
     long int *NODEID = NULL, *NWALLID = NULL;
     long int ICELLX = 0, ICELLY = 0, ICELLZ = 0;
+    long int IXMAX = 0, IYMAX =0, IZMAX =0;
 
     double *COORX = NULL, *COORY = NULL, *COORZ = NULL;
     double *SNX = NULL, *SNY = NULL, *SNZ = NULL;
@@ -13,7 +14,7 @@ namespace COMMONMOD
     double *TANK_A = NULL;
 
     double RCELL=3.2;
-    
+
     void INITCOMMONMOD()
     {
         NODEID = new long int[8+LNODE]();
