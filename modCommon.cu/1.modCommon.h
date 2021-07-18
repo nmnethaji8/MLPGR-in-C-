@@ -6,6 +6,7 @@ namespace COMMONMOD
 
     extern long int *NODEID, *NWALLID;
     extern long int ICELLX, ICELLY, ICELLZ;
+    extern long int IXMAX, IYMAX, IZMAX;
 
     extern double *COORX, *COORY, *COORZ;
     extern double *SNX, *SNY, *SNZ;
