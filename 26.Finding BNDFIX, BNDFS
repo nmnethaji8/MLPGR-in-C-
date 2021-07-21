@@ -600,7 +600,7 @@ int main()
     //STORING BNDNODES FOR FORCED ADJUSTMENT IN NEWCOOR
 
     BNDNP = NODEID[0]-NODEID[2];
-    BNDXY = new double[3*BNDNP]; BNDFIX = new long int[3*(BNDNP+1)]();
+    BNDXY = new double[3*BNDNP](); BNDFIX = new long int[3*(BNDNP+1)]();
     BNDFS = new long int[BNDNP+1]();
     TMPR7 = 0.0001;
 
