@@ -1,0 +1,10 @@
+#include"nodelinkNew_v2.3.h"
+void NODELINKMOD::NODELINKTYP::INITCELL(int CELX, int CELY, int CELZ, int I)
+{
+        CELLX=CELX+2;
+        CELLY=CELY+2;
+        CELLZ=CELZ+2;
+        CELLN=CELLX*CELLY*CELLZ;
+        CS1=I;
+        CELL=new long int[CELLN*CS1];
+};
