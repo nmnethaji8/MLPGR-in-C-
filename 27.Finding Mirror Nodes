@@ -1,0 +1,667 @@
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<math.h>
+
+#include"modules_v3.1.h"
+#include"fnptCoupling.h"
+#include"modCommon.h"
+#include"nodelinkNew_v2.3.h"
+//#include"mlpgMainSubs.h"
+
+using namespace std;
+using namespace PROBESMOD;
+using namespace FNPTCPLMOD;
+using namespace COMMONMOD;
+using namespace NODELINKMOD;
+
+void CYLIND5(string MESHFILE, long int &FSNOD1, long int &FSNOD2,
+double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
+double CYLR, double DDL)
+{
+    long int MSFL = 101;
+    long int FSNODSTART=0, FSNODEND=0, NGHST=0;
+    long int IX=0, IY=0, IZ=0;
+    long int NODEGETY[2]={0};
+    double TMPR1=0, TMPR2=0, TMPR3=0, TMPR4=0, TMPR7=0, RIAV=0;
+    double DRMIN=0.0001;
+    ifstream meshfile;
+    meshfile.open(MESHFILE);
+
+    ofstream mlpgTerOut;
+    mlpgTerOut.open("mlpgTerOut.dat", ofstream::app);
+    mlpgTerOut << "Entering Cylind3" << endl;
+    string skip;
+    getline(meshfile,skip);
+    //cout << skip << endl;
+    for(int i=1; i<=7; i++)
+    {
+        meshfile >>  NODEID[i];
+        mlpgTerOut <<   NODEID[i] << " ";
+    }
+    mlpgTerOut << endl;
+    meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    //cout << skip << endl;
+    meshfile >> FSNODSTART >> FSNODEND;
+    //cout << FSNODSTART << " "<< FSNODEND << endl;
+    meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    //cout << skip << endl;
+    meshfile >> FSNOD1;
+    //cout << FSNOD1 << endl;
+    getline(meshfile,skip);
+    //meshfile.ignore(1,'\n');
+    meshfile >> FSNOD2;
+    //cout << FSNOD2 << endl;
+    getline(meshfile,skip);
+    //meshfile.ignore(1,'\n');
+    getline(meshfile,skip);
+    //cout << skip << endl;
+
+    //Reading fluid and freesurface nodes
+
+    for(long int i=0; i< NODEID[2]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+         NODEID2[i]=0;
+    }
+
+    /*for(long int i=0; i< NODEID[2]; i++)
+    {
+        output <<  COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;
+    }*/
+    for(long int i=FSNODSTART-1; i<FSNODEND; i++)
+    {
+         NODEID2[i]=4;
+    }
+
+    //Wavemaker nodes
+    
+    for(long int i= NODEID[2]; i< NODEID[3]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output <<  COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+         NODEID2[i]=8;
+         NWALLID[i]=2;
+         NWALLID[1* LNODE+i]=1;
+
+        //Top edge of wavemaker
+        if (NODEGETY[0]==2)
+        {
+             NWALLID[1* LNODE+i]=-11;
+        }
+
+        //Side edges of wavemaker
+        if (NODEGETY[1]==1)
+        {
+             NWALLID[0* LNODE+i]=7;//Intersection of surfaces
+             NWALLID[2* LNODE+i]=9;//SPECIAL NODE FOR PRESSURE EQUATION 
+        }
+
+    }
+
+    //Bottom wall nodes
+    for(long int i= NODEID[3]; i< NODEID[4]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output <<  COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+         NODEID2[i]=2;
+         NWALLID[1* LNODE+i]=1;
+         NWALLID[0* LNODE+i]=1;
+
+        if (NODEGETY[1]==1)
+        {
+             NWALLID[0* LNODE+i]=7;//Intersection of surfaces
+             NWALLID[2* LNODE+i]=9;//SPECIAL NODE FOR PRESSURE EQUATION 
+        }
+ 
+    }
+
+    //Opposite wall of wavemaker
+
+    for(long int i= NODEID[4]; i< NODEID[5]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output <<  COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+         NODEID2[i]=3;
+         NWALLID[0* LNODE+i]=2;
+         NWALLID[1* LNODE+i]=1;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+             NWALLID[1* LNODE+i]=-11;//Intersection of surfaces
+        }
+
+        //Side edge
+        if (NODEGETY[1]==1)
+        {
+             NWALLID[0* LNODE+i]=7;
+             NWALLID[2* LNODE+i]=9;
+        }
+    }
+
+    //Sidewall Near
+
+    for(long int i= NODEID[5]; i< NODEID[6]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+        /*output <<  COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << endl;*/
+
+         NODEID2[i]=1;
+         NWALLID[1* LNODE+i]=1;
+         NWALLID[0* LNODE+i]=3;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+             NWALLID[1* LNODE+i]=-11;//Intersection of surfaces
+        }
+        
+    }
+
+        //Sidewall Far
+
+    for(long int i= NODEID[6]; i< NODEID[7]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+         NODEID2[i]=7;
+         NWALLID[1* LNODE+i]=1;
+         NWALLID[0* LNODE+i]=3;
+
+        //Top edge
+
+        if (NODEGETY[0]==2)
+        {
+             NWALLID[1* LNODE+i]=-11;//Intersection of surfaces
+        }
+
+    }
+
+    //Cylinder Nodes
+    for(long int i= NODEID[7]; i< NODEID[1]; i++)
+    {
+        meshfile >>  COORX[i] >>  COORY[i]
+        >>  COORZ[i] >>  SNX[i] >>  SNY[i]
+        >>  SNZ[i] >>  SMX[i] >>  SMY[i]
+        >>  SMZ[i] >>  SSX[i] >>  SSY[i]
+        >>  SSZ[i] >> NODEGETY[0] >> NODEGETY[1];
+
+         NODEID2[i]=9;
+
+        //Bottom edge
+
+        if (NODEGETY[0]==1)
+        {
+             NWALLID[2* LNODE+i]=9;//Pressure BC ID
+        }
+
+        /*output << COORX[i] << " " <<  COORY[i] << " "
+        <<  COORZ[i] << " " <<  SNX[i] << " " <<  SNY[i]
+        << " " <<  SNZ[i] << " " <<  SMX[i] << " " <<  SMY[i]
+        << " " <<  SMZ[i] << " " <<  SSX[i] << " " <<  SSY[i]
+        << " " <<  SSZ[i] << " " << NODEGETY[0] << " " << NODEGETY[1]
+        << " " <<  NODEID[i+8] << " " <<  NWALLID[2* LNODE+i] << " ";*/
+    }
+    meshfile.close();
+
+    // Ghost Nodes
+
+    NGHST= NODEID[1]- NODEID[2];
+     NODEID[0]= NODEID[1]+NGHST;
+    for(long int i= NODEID[2]; i< NODEID[7]; i++)
+    {
+        long int j=i+ NODEID[1]- NODEID[2];
+        if(j+1> NODEID[0])
+        {
+            mlpgTerOut << " [ERR] CHECK GHOST GENERATE NGHT > NODEID(0)" << endl;
+        }
+        RIAV = 0.3*DDL; //Keeping this lower than GENERATEGHOST(DDR)
+        for(long int k=0; k<3; k++)
+        {
+             COORX[k* LNODE+j]= COORX[i]+ SNX[i]*RIAV;
+             COORY[k* LNODE+j]= COORY[i]+ SNY[i]*RIAV;
+             COORZ[k* LNODE+j]= COORZ[i]+ SNZ[i]*RIAV;
+        }
+         NODEID2[j]=-6;
+         NWALLID[1* LNODE+j]=-10;
+        /*for(long int k=0; k<3; k++)
+        {
+            output <<  COORX[k* LNODE+j] << " ";
+        }
+        for(long int k=0; k<3; k++)
+        {
+            output <<  COORY[k* LNODE+j] << " ";
+        }
+        for(long int k=0; k<3; k++)
+        {
+            output <<  COORZ[k* LNODE+j] << " ";
+        }*/
+        //output <<  NODEID[j] << " " <<  NWALLID[1* LNODE+j] << endl;
+    }
+    
+    for(long int i= NODEID[7]; i< NODEID[1]; i++)
+    {
+        //long int j=i+ NODEID[7]+ NODEID[1]- NODEID[2];
+        TMPR7=1/DRMIN;
+        long int k=0;
+
+        for(k= NODEID[7]; k< NODEID[1]; k++)
+        {
+            if(k!=i)
+            {
+                TMPR1= COORX[k]- COORX[i];
+                TMPR2= COORY[k]- COORY[i];
+                TMPR3= COORZ[k]- COORZ[i];
+                TMPR4=sqrt(pow(TMPR1,2)+pow(TMPR2,2)+pow(TMPR3,2));
+                if(TMPR4<TMPR7)
+                {
+                    TMPR7=TMPR4; 
+                }
+            }
+        }
+        if(k==0)
+        {
+            mlpgTerOut << "[ERR] CHECK CYLIND GHOST" << k+1 << endl;
+            mlpgTerOut <<  COORX[k] << " " <<  COORY[k] << " " <<  COORZ[k] << endl;
+        }
+        TMPR7=0.8*TMPR7;
+        long int j= NODEID[1]- NODEID[2]+i;
+        if(j+1> NODEID[0])
+        {
+            mlpgTerOut << "[ERR] CHECK GHOST GENERATE NGHT > NODEID[0]" 
+            << i << " "<<  NODEID[0] << endl;
+        }
+         COORX[j]= COORX[i]+ SNX[i]*TMPR7;
+         COORY[j]= COORY[i]+ SNY[i]*TMPR7;
+         COORZ[j]= COORZ[i];
+         NODEID2[j]=-9;
+         NWALLID[1* LNODE+j]=-10;
+        //cout<< j << endl;
+        mlpgTerOut << "[INF] CYL AND GHOST COOR" << endl;
+        mlpgTerOut << "[---] " <<  COORX[i] << " " <<  COORY[i]
+        << " " <<  COORZ[i] << " " << endl;
+        mlpgTerOut << "[---] " <<  COORX[j] << " " <<  COORY[j]
+        << " " <<  COORZ[j] << " " << endl;
+    }
+    mlpgTerOut.close();
+
+    for(long int i=0;i<LNODE;i++)
+    {
+        COORX[1*LNODE+i]=COORX[i];
+        COORY[1*LNODE+i]=COORY[i];
+        COORZ[1*LNODE+i]=COORZ[i];
+    }
+
+    IX =  (long int)((DOMX[1]-DOMX[2])/DDL);
+    IY =  (long int)((DOMY[1]-DOMY[2])/DDL);
+    IZ =  (long int)((DOMZ[1]-DOMZ[2])/DDL);
+
+    IXMAX = IX + 20;
+    IYMAX = IY + 20;
+    IZMAX = IZ + 20;
+
+    //cout << IXMAX << " " << IYMAX << " " <<  IZMAX << " ";
+}
+
+void NODEGRID(string MESHFILE, long int &FSNOD1, long int &FSNOD2,
+double *DOMX, double *DOMY, double *DOMZ, double CYLX, double CYLY,
+double CYLR, double DDL )
+{
+    long int I, J, NGHST, IEND;
+    CYLIND5(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, 
+    CYLX, CYLY, CYLR, DDL);
+
+    ofstream mlpgTerOut;
+    mlpgTerOut.open("mlpgTerOut.dat", ofstream::app);
+    mlpgTerOut << "TOTAL WATER PARTICLE NUMBER IS,\t" << NODEID[2] << endl;
+    mlpgTerOut << "TOTAL WATERANDINNER WALL PARTICLE NUMBER,\t" << NODEID[1] << endl;
+    mlpgTerOut << "TOTAL  PARTICLE NUMBER IS,\t" << NODEID[0] << endl;
+    if(NODEID[0]>LNODE)
+    {
+        cout<<"ERROR IN ALLOCATION OF NUMBER OF NODES"<<endl;
+    }
+
+    // Finding unique boundary nodes
+    for(long int i=NODEID[2];i<NODEID[0];i++)
+    {
+        for(long int j=i+1;j<NODEID[0];j++)
+        {
+            if((COORX[i]==COORX[j])&&(COORY[i]==COORY[j])&&(COORZ[i]==COORZ[j]))
+            {
+                cout << "unique node found\t" << i+1 << " " << j+1 << " "
+                << NODEID2[i] << " " << NODEID2[j] << " " << endl;
+
+                cout << COORX[i] << " " << COORY[i] << " "
+                << COORZ[i] << endl;
+
+                cout << COORX[j] << " " << COORY[j] << " "
+                << COORZ[j] << endl;
+            }
+        }
+    }
+
+    ICELLX = (long int)(IXMAX/RCELL)+1;
+    ICELLY = (long int)(IYMAX/RCELL)+1;
+    ICELLZ = (long int)(IZMAX*2/RCELL)+1;
+
+    mlpgTerOut << "CELL SIZES" << " " << ICELLX << " " 
+    << ICELLY << " " <<  ICELLZ << endl;
+    mlpgTerOut.close();
+
+    NGHST=0;
+    ofstream OutputXY_FLUENT;
+    OutputXY_FLUENT.open("Output/XY_FLUENT.DAT"); //
+    for(long int i=NODEID[1];i<NODEID[0];i++)
+    {
+        if(NODEID2[i]==-9)
+        {
+            NGHST++;
+        }
+    }
+    OutputXY_FLUENT << NODEID[1]+NGHST << endl;
+    OutputXY_FLUENT << "TIME=" << 0 << endl;
+    for(long int i=0;i<NODEID[1];i++)
+    {
+        if((fabs(COORX[i])<=70)&&(fabs(COORY[2*LNODE+i])<=70)&&(fabs(COORZ[2*LNODE+i])<=70))
+        {
+            OutputXY_FLUENT << COORX[i] << " " << COORY[i] << " "
+            << COORZ[i] << " " << " 0 " << " " << SNX[i] << " " << SNY[i] << " "
+            << SNZ[i] << " " << NODEID2[i] << endl;
+        }
+        else
+        {
+            OutputXY_FLUENT << "-10 -10 -10 0 0 0 0 " << NODEID2[i] << endl;
+        }   
+    }
+
+    for(long int i=NODEID[1];i<NODEID[0];i++)
+    {
+        if(NODEID2[i]==-9)
+        {
+            OutputXY_FLUENT << COORX[i] << " " << COORY[i] << " "
+            << COORZ[i] << " 0 0 0 0 " << NODEID2[i] << endl;
+        }
+    }
+    OutputXY_FLUENT.close();
+}
+int main()
+{
+    //declaring and initializing variables from mlpgrInput.dat file
+    double H0=0.7;                  //Water depth
+    double DDL=0.04375;             //Avg.distance between the nodes
+    double SCALE=1.55;              //Scale factor to determine the domain of influence 
+    long int KW=1;                  //Coefficient for Gauss Weight Function
+    long int MBAS=4;                //Number of components in base function
+    double DT=0.0075, TOTAL_TIME=0; //Time-Step (s), Starting time (s)
+    long int NSTEPS=5500;           //Number of time-steps
+
+    /*READ RECORD DATA TIME,THE FREQUENCY OF PRINT OUT IN THE NUMBER OF TYPE STEPS 
+    RECORD THE TIME STEP, BEFORE THAT TIME, THE RECORD FREQUENCY IS EVRSTEP,AFTER
+    THAT TIME, THE RECORD FREQUENCY IS EVRSTEP1*/
+
+    long int IPRINT=5500, I_PF=120, I_PF1=40;//Freq1, Freq1, Freq2
+    long int RESFREQ=800;           //Resume file interval (number of time-step)
+    bool RESUMECHK=0;
+    string RESUMEFILE="Output/Resume_000000800.dat";
+    long int I_CAL_V=0;             //Viscosity On? (0/1)
+    double VCOEFF=0.000001;         //Kinematic viscosity
+    long int I_WM=15;               //Wave-maker type (0-No wavemaker, 1-Flap, 2-piston, 15-FNPT)
+    long int IFSI=0;                //Enable elastic structure? (0/1)
+    long int NTHR=8;                //Number of OpenMP Threads
+    long int II=170000;       //Maximum number of nodes (LNODE)
+    string MESHFILE="EmptyTank_L21_dr043_botFul3.dat";//Name of mesh-file
+    double DOMX[2]={0,21},DOMY[2]={0,0.7},DOMZ[2]={0,0.7};//Domain coordinates
+    double CYLX=6.5,CYLY=0.7,CYLR=0.04375;//Cylinder coordinates
+    double SPONGEX=13;              //X Location of Sponge layer start (before right-wall)
+    long int REMESHFREQ=30;         //Remeshing Freq (=0 to disable)
+    long int NP=9;
+
+    //checking the input data
+    ofstream mlpgTerOut;
+    mlpgTerOut.open("mlpgTerOut.dat");
+    mlpgTerOut<<"3D WATER WAVE PROBLEM WITH MLPGR METHOD\n"
+    <<H0<<"\n"<<DDL<<"\n"<<SCALE<<"\n"<<KW<<"\n"<<MBAS<<"\n"
+    <<DT<<"\t"<<TOTAL_TIME<<"\t"<<NSTEPS<<"\n"<<IPRINT<<"\t"<<I_PF
+    <<"\t"<<I_PF1<<"\n"<<I_CAL_V<<"\t"<<VCOEFF<<"\n"<<I_WM<<"\n"
+    <<IFSI<<"\n"<<NTHR<<"\n"<<MESHFILE<<"\n"<<DOMX[0]<<"\t"<<DOMY[0]<<"\t"
+    <<DOMZ[0]<<"\n"<<DOMX[1]<<"\t"<<DOMY[1]<<"\t"<<DOMZ[1]<<"\n"
+    <<CYLX<<"\t"<<CYLY<<"\t"<<CYLR<<"\n"<<SPONGEX<<endl;
+    mlpgTerOut.close();
+
+    //<<REMESHFREQ<<"\n"<<"\n"<<RESFREQ<<"\t"<<RESUMECHK<<"\n"<<RESUMEFILE<<II<<"\n"
+    FNPTCPLTYP FP;
+    NODELINKTYP MLDOM, FSDOM, BOTOM;
+    PROBETYP WP,PP;
+
+    WP.INITPROBE(NP, 1, 602);       //Number of wave probes
+    //WP.FILE=602;
+    ifstream mlpgrInput;
+    mlpgrInput.open("mlpgrInput.dat");
+    /*for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<3; j++)
+        {
+            cout << WP.XYZ[i*3+j] << " " ;
+        }
+        cout << "\n" << endl;
+    }*/
+    for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<2; j++)
+        {
+            mlpgrInput >> WP.XYZ[i*2+j];
+            //cout << WP.XYZ[i*2+j] << " " ;
+        }
+        //cout << "\n" << endl;
+    }
+    //cout << WP.FILE << endl;
+    mlpgrInput >> NP;
+    PP.INITPROBE(NP, 1, 603);
+    for(long int i=0; i<NP; i++)
+    {
+        for(long int j=0; j<3; j++)
+        {
+            mlpgrInput >>PP.XYZ[i*3+j];
+        }
+    }
+    mlpgrInput.close();
+    FP.FILENAME="/Output PHIT2 23001.dt0075.S18.dat";
+    //cout<<FP.FILENAME<<endl;
+    FP.NX=121;
+    //cout<<FP.NX<<endl;
+    FP.NY=21;
+    //cout<<FP.NY<<endl;
+    FP.DDL=0.05;
+    //cout<<FP.DDL<<endl;
+    FP.X0=18.38;
+    //cout<<FP.X0<<endl;
+    FP.RLXLEN=1;
+    //cout<<FP.RLXLEN<<endl;
+    FP.FILE=601;
+    //cout<<FP.FILE<<endl;
+    FP.NN=(FP.NX)*(FP.NY);
+    //cout<<FP.NN<<endl;
+     LNODE=II;
+     INITCOMMONMOD();
+
+    //Variables in malpgrMain
+
+    double *FB = NULL, *PTMP = NULL, *P = NULL;
+    FB = new double[ LNODE]();
+    PTMP = new double[ LNODE]();
+    P = new double[ LNODE]();
+    double *UN = NULL, *UM = NULL;
+    UN = new double[ LNODE*3]();
+    UM = new double[ LNODE]();
+    double *CSUXT1 = NULL, *CSUYT1 = NULL, *CSUZT1 = NULL;
+    CSUXT1 = new double[ LNODE](); CSUYT1 = new double[ LNODE](); CSUZT1 = new double[ LNODE]();
+    double TMPR7=0;
+
+    double *ERRTMP = NULL, *MMTOIM = NULL;
+    ERRTMP = new double[LNODE], MMTOIM = new double[LNODE];
+
+    long int BNDNP = 0, MIRRNP=0;
+    long int FSNOD1 = 0, FSNOD2 = 0;
+
+    double *BNDXY = nullptr, *MIRRXY = nullptr;
+    long int *BNDFIX = nullptr;
+    long int *BNDFS = nullptr;
+
+    long int NODN = 0; 
+    ofstream output;
+    output.open("output2.txt");
+    mlpgTerOut.open("mlpgTerOut.dat",ofstream::app);
+
+    //Generate Nodes
+
+    NODEGRID(MESHFILE, FSNOD1, FSNOD2, DOMX, DOMY, DOMZ, CYLX, CYLY, CYLR, DDL);
+    for(long int i=0;i<LNODE;i++)
+    {
+        COORX[1*LNODE+i]=COORX[i];
+        COORY[1*LNODE+i]=COORY[i];
+        COORZ[1*LNODE+i]=COORZ[i];
+    }
+
+    NODN = NODEID[0];   //Total Number of Nodes
+    cout << NODEID[0];
+
+    mlpgTerOut << "[INF] FREE SURFACE REFERENCE NODES\n"
+    << FSNOD1 << " " << COORX[FSNOD1-1] << " " << COORY[FSNOD1-1] << " "
+    << COORZ[FSNOD1-1] << endl;
+    mlpgTerOut << FSNOD2 << " " << COORX[FSNOD2-1] << " " << COORY[FSNOD2-1] << " "
+    << COORZ[FSNOD2-1] << endl;
+
+    MLDOM.INITCELL(ICELLX, ICELLY, ICELLZ, 500);
+    FSDOM.INITCELL(ICELLX, ICELLY, 1, 100);
+    BOTOM.INITCELL(ICELLX, ICELLY, 1, 100);
+
+    //STORING BNDNODES FOR FORCED ADJUSTMENT IN NEWCOOR
+
+    BNDNP = NODEID[0]-NODEID[2];
+    BNDXY = new double[3*BNDNP](); BNDFIX = new long int[3*(BNDNP+1)]();
+    BNDFS = new long int[BNDNP+1]();
+    TMPR7 = 0.0001;
+
+    for(long int i=0;i<BNDNP;i++)
+    {
+        long int j=NODEID[2]+i;
+        {
+            BNDXY[0*BNDNP+i]=COORX[0*BNDNP+j];
+            BNDXY[1*BNDNP+i]=COORY[0*BNDNP+j];
+            BNDXY[2*BNDNP+i]=COORZ[0*BNDNP+j];
+
+            if(NODEID2[j]==2)
+            {
+                BNDFIX[0] = BNDFIX[0] + 1;
+                BNDFIX[BNDFIX[0]*3+0]=j+1;
+            }
+
+            if(fabs(COORZ[j]-H0)<TMPR7)
+            {
+                if((NODEID2[j]==1)||(NODEID2[j]==7))
+                {
+                    BNDFS[0]++;
+                    BNDFS[BNDFS[0]]=j+1;
+                    output << BNDFS[0] << " " << j+1 << endl;
+                }
+            }
+
+        }
+    }
+
+    mlpgTerOut << "[INF] BNDFIX : " ;
+    for(long int i=0;i<3;i++)
+    {
+        mlpgTerOut << BNDFIX[0*3+i] << " ";
+    }
+    mlpgTerOut << "\n[---] ";
+    for(long int i=0;i<3;i++)
+    {
+        mlpgTerOut << BNDFIX[1*3+i] << " ";
+    }
+    mlpgTerOut << "\n[INF] BNDFS  : " << BNDFS[0];
+
+    // MIRROR NODES
+
+    MIRRNP = NODEID[1]-NODEID[7];
+    MIRRXY = new double[3*MIRRNP]();
+
+    long int ISCYL = NODEID[7], ICYL=0, IGHT=0;
+    long int ISGHT = NODEID[1]+NODEID[7]-NODEID[2];
+    for (long int i = 0; i < MIRRNP ; i++)
+    {
+        ICYL = ISCYL + i;
+        IGHT = ISGHT + i;
+        MIRRXY[i]=2*COORX[ICYL]-COORX[IGHT];
+        MIRRXY[1*MIRRNP+i]=2*COORY[ICYL]-COORY[IGHT];
+        MIRRXY[2*MIRRNP+i]=COORZ[IGHT];
+    }
+    
+    mlpgTerOut << "[INF] MIRRNP " << MIRRNP << endl;
+    mlpgTerOut << "[INF] IGHT " << IGHT+1 << endl;
+
+    mlpgTerOut.close();
+    return 0;
+}
