@@ -1,0 +1,46 @@
+#ifndef MY_HEADER_H
+#define MY_HEADER_H
+namespace PROBESMOD
+{
+    class PROBETYP
+    {
+        public:long int NP, NVAR, FILE;
+        double *XYZ, *DATA;
+        PROBETYP();
+        void INITPROBE(long int ,long int ,long int );
+    };
+}
+
+namespace NEIGHNODES
+{
+    class MLPGCONN
+    {
+        public:
+        int * i;
+        MLPGCONN();
+    };
+    //MLPGCONN *NLINK;
+}
+
+namespace MLPGKINE
+{
+    extern long double *UX, *UY, *UZ;
+    extern long double *PPX, *PPY, *PPZ;
+    extern long double *ROU, *R, *CC, *R0;
+}
+
+namespace DOMAINMOD
+{
+    class DOMAINDATA
+    {
+        public:
+        long int NP, NPS;
+        double *CX, *CY, *CZ;
+        double *UX, *UY, *UZ;
+        double *PR, *ET, *Z0;
+        void INITCOOR(const long int);
+        //void INITALL();
+        //void ENDDOMAINDATA();
+    };
+}
+#endif
