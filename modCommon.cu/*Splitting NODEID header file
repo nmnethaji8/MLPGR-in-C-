@@ -4,7 +4,7 @@ namespace COMMONMOD
 {
     extern long int LNODE;
 
-    extern long int *NODEID, *NODEID, *NWALLID;
+    extern long int *NODEID, *NODEID2, *NWALLID;
     extern long int ICELLX, ICELLY, ICELLZ;
     extern long int IXMAX, IYMAX, IZMAX;
 
